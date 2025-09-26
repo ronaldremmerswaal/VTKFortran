@@ -122,28 +122,62 @@ ENDIF ()
 
 
 IF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU" OR Fortran_COMPILER_NAME MATCHES "gfortran*")
-  # gfortran 
-  set(FORTRAN_FLAGS "-cpp -frealloc-lhs ")
-  set (CMAKE_Fortran_FLAGS "${FORTRAN_FLAGS} " CACHE STRING "" FORCE)
-  set (CMAKE_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS} " CACHE STRING "" FORCE)
-  set (CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3 -Warray-bounds -Wcharacter-truncation -Wline-truncation -Wimplicit-interface -Wimplicit-procedure -Wunderflow -Wuninitialized -fcheck=all -fmodule-private -ffree-line-length-132 -fimplicit-none -fbacktrace -fdump-core -finit-real=nan -std=f2003 -fall-intrinsics " CACHE STRING "" FORCE)
+  # gfortran - append to existing flags if not already present
+  set(PROJECT_FORTRAN_FLAGS "-cpp -frealloc-lhs")
+  set(PROJECT_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS}")
+  set(PROJECT_Fortran_FLAGS_DEBUG "-O0 -g3 -Warray-bounds -Wcharacter-truncation -Wline-truncation -Wimplicit-interface -Wimplicit-procedure -Wunderflow -Wuninitialized -fcheck=all -fmodule-private -ffree-line-length-132 -fimplicit-none -fbacktrace -fdump-core -finit-real=nan -std=f2003 -fall-intrinsics")
+  
+  # Only append flags if they're not already present
+  if(NOT CMAKE_Fortran_FLAGS MATCHES "${PROJECT_FORTRAN_FLAGS}")
+    string(STRIP "${CMAKE_Fortran_FLAGS} ${PROJECT_FORTRAN_FLAGS}" CMAKE_Fortran_FLAGS)
+  endif()
+  if(NOT CMAKE_Fortran_FLAGS_RELEASE MATCHES "${EXTRA_FLAGS}" AND EXTRA_FLAGS)
+    string(STRIP "${CMAKE_Fortran_FLAGS_RELEASE} ${PROJECT_Fortran_FLAGS_RELEASE}" CMAKE_Fortran_FLAGS_RELEASE)
+  endif()
+  if(NOT CMAKE_BUILD_TYPE STREQUAL "RELEASE" AND NOT CMAKE_Fortran_FLAGS_DEBUG MATCHES "fcheck=all")
+    string(STRIP "${CMAKE_Fortran_FLAGS_DEBUG} ${PROJECT_Fortran_FLAGS_DEBUG}" CMAKE_Fortran_FLAGS_DEBUG)
+  endif()
+  
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}" CACHE STRING "Fortran compiler flags" FORCE)
+  set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}" CACHE STRING "Fortran compiler flags for Release" FORCE)
+  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" CACHE STRING "Fortran compiler flags for Debug" FORCE)
+  
 ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel" OR Fortran_COMPILER_NAME MATCHES "ifort*")
-  # ifort
-  set(FORTRAN_FLAGS "-cpp -assume realloc_lhs ")
-  set (CMAKE_Fortran_FLAGS "${FORTRAN_FLAGS} " CACHE STRING "" FORCE)
-  set (CMAKE_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS} " CACHE STRING "" FORCE)
-  set (CMAKE_Fortran_FLAGS_DEBUG   "-O0 -debug all -check all -warn all -extend-source 132 -traceback -gen-interfaces " CACHE STRING "" FORCE)
-#-fpe-all=0 -fp-stack-check -fstack-protector-all -ftrapuv -no-ftz -std03
+  # ifort - append to existing flags if not already present
+  set(PROJECT_FORTRAN_FLAGS "-cpp -assume realloc_lhs")
+  set(PROJECT_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS}")
+  set(PROJECT_Fortran_FLAGS_DEBUG "-O0 -debug all -check all -warn all -extend-source 132 -traceback -gen-interfaces")
+  #-fpe-all=0 -fp-stack-check -fstack-protector-all -ftrapuv -no-ftz -std03
+  
+  # Only append flags if they're not already present
+  if(NOT CMAKE_Fortran_FLAGS MATCHES "${PROJECT_FORTRAN_FLAGS}")
+    string(STRIP "${CMAKE_Fortran_FLAGS} ${PROJECT_FORTRAN_FLAGS}" CMAKE_Fortran_FLAGS)
+  endif()
+  if(NOT CMAKE_Fortran_FLAGS_RELEASE MATCHES "${EXTRA_FLAGS}" AND EXTRA_FLAGS)
+    string(STRIP "${CMAKE_Fortran_FLAGS_RELEASE} ${PROJECT_Fortran_FLAGS_RELEASE}" CMAKE_Fortran_FLAGS_RELEASE)
+  endif()
+  if(NOT CMAKE_BUILD_TYPE STREQUAL "RELEASE" AND NOT CMAKE_Fortran_FLAGS_DEBUG MATCHES "check all")
+    string(STRIP "${CMAKE_Fortran_FLAGS_DEBUG} ${PROJECT_Fortran_FLAGS_DEBUG}" CMAKE_Fortran_FLAGS_DEBUG)
+  endif()
+  
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}" CACHE STRING "Fortran compiler flags" FORCE)
+  set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}" CACHE STRING "Fortran compiler flags for Release" FORCE)
+  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" CACHE STRING "Fortran compiler flags for Debug" FORCE)
+  
 ELSE ()
   message ("No optimized Fortran compiler flags are known, we just try -O2...")
-  set (CMAKE_Fortran_FLAGS_RELEASE "-O2")
-  set (CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
+  # Append basic optimization flags to existing flags
+  string(STRIP "${CMAKE_Fortran_FLAGS_RELEASE} -O2" CMAKE_Fortran_FLAGS_RELEASE)
+  string(STRIP "${CMAKE_Fortran_FLAGS_DEBUG} -O0 -g" CMAKE_Fortran_FLAGS_DEBUG)
+  
+  set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}" CACHE STRING "Fortran compiler flags for Release" FORCE)
+  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" CACHE STRING "Fortran compiler flags for Debug" FORCE)
 ENDIF ()
 
-message("Fortra_FLAGS: ${FORTRAN_FLAGS}")
 message("CMAKE_Fortran_FLAGS: ${CMAKE_Fortran_FLAGS}")
 message("CMAKE_Fortran_FLAGS_RELEASE: ${CMAKE_Fortran_FLAGS_RELEASE}")
-message("CMAKE_Fortra_FLAGS_DEBUG: ${CMAKE_Fortran_FLAGS_DEBUG}")
+message("CMAKE_Fortran_FLAGS_DEBUG: ${CMAKE_Fortran_FLAGS_DEBUG}")
+message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 
 #################################################################
