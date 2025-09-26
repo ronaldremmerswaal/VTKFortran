@@ -45,3 +45,5 @@ openmp_speedup.lay
 diagnostic_messages
 error_messages
 run_diff
+
+build

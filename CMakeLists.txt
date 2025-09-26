@@ -150,7 +150,8 @@ message("CMAKE_Fortra_FLAGS_DEBUG: ${CMAKE_Fortran_FLAGS_DEBUG}")
 # ADD SOURCE SUBDIRS
 #################################################################
 
-
+# Add third-party dependencies first
+ADD_SUBDIRECTORY(${SRC_PATH}/third_party)
 
 ADD_SUBDIRECTORY(${LIB_SRC_PATH})
 ADD_SUBDIRECTORY(${TEST_SRC_PATH})
