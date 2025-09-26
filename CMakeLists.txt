@@ -1,7 +1,7 @@
 #################################################################
 # HEADER
 #################################################################
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 
 
@@ -21,11 +21,11 @@ SET(CMAKE_VERBOSE_MAKEFILE TRUE)
 # DEFINE PATHS
 #################################################################
 
-SET(SRC_PATH ${CMAKE_SOURCE_DIR}/src)
+SET(SRC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src)
 SET(LIB_SRC_PATH ${SRC_PATH}/lib)
-SET(TEST_SRC_PATH ${SRC_PATH}/test)
+SET(TEST_SRC_PATH ${SRC_PATH}/tests)
 
-SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/Modules/")
+SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules/")
 
 
 #################################################################
@@ -149,6 +149,7 @@ message("CMAKE_Fortra_FLAGS_DEBUG: ${CMAKE_Fortran_FLAGS_DEBUG}")
 #################################################################
 # ADD SOURCE SUBDIRS
 #################################################################
+
 
 
 ADD_SUBDIRECTORY(${LIB_SRC_PATH})
