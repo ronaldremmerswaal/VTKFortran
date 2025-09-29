@@ -58,7 +58,7 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 
 GET_FILENAME_COMPONENT(Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 
-OPTION(${PROJECT_NAME}_ENABLE_F03STD "To force strict conformance to the Fortran 2003 standard" OFF)
+OPTION(${PROJECT_NAME}_ENABLE_F03STD "To force strict conformance to the Fortran 2008 standard" OFF)
 OPTION(${PROJECT_NAME}_ENABLE_OPTIMIZE "To activate optimization flags" OFF)
 OPTION(${PROJECT_NAME}_ENABLE_OPENMP "To activate the OpenMP extensions for Fortran" OFF)
 OPTION(${PROJECT_NAME}_ENABLE_MPI "To compile MPI tests and link against MPI library" OFF)
@@ -69,9 +69,9 @@ OPTION(${PROJECT_NAME}_ENABLE_R16P "To define a real precission type with 128 bi
 
 IF (${${PROJECT_NAME}_ENABLE_F03STD})
     IF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU" OR Fortran_COMPILER_NAME MATCHES "gfortran*")
-        SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -std=f2003 -fall-intrinsics")
+        SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -std=f2008 -fall-intrinsics")
     ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel" OR Fortran_COMPILER_NAME MATCHES "ifort*")
-        SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -std03")
+        SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -std08")
     ENDIF ()
 ENDIF ()
 
@@ -125,7 +125,7 @@ IF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU" OR Fortran_COMPILER_NAME MATCHES
   # gfortran - append to existing flags if not already present
   set(PROJECT_FORTRAN_FLAGS "-cpp -frealloc-lhs")
   set(PROJECT_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS}")
-  set(PROJECT_Fortran_FLAGS_DEBUG "-O0 -g3 -Warray-bounds -Wcharacter-truncation -Wline-truncation -Wimplicit-interface -Wimplicit-procedure -Wunderflow -Wuninitialized -fcheck=all -fmodule-private -ffree-line-length-132 -fimplicit-none -fbacktrace -fdump-core -finit-real=nan -std=f2003 -fall-intrinsics")
+  set(PROJECT_Fortran_FLAGS_DEBUG "-O0 -g3 -Warray-bounds -Wcharacter-truncation -Wline-truncation -Wimplicit-interface -Wimplicit-procedure -Wunderflow -Wuninitialized -fcheck=all -fmodule-private -ffree-line-length-132 -fimplicit-none -fbacktrace -fdump-core -finit-real=nan -std=f2008 -fall-intrinsics")
   
   # Only append flags if they're not already present
   if(NOT CMAKE_Fortran_FLAGS MATCHES "${PROJECT_FORTRAN_FLAGS}")
