@@ -1,17 +1,19 @@
 # Third-party dependencies for VTKFortran
     
 # Update submodules as needed
-option(GIT_SUBMODULE "Check submodules during build" ON)
-if(GIT_SUBMODULE)
-    message(STATUS "Submodule update (non-recursive to avoid nested dependency duplication)")
-    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init ${CMAKE_CURRENT_SOURCE_DIR}
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                    RESULT_VARIABLE GIT_SUBMOD_RESULT)
-    if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-        message(FATAL_ERROR "git submodule update --init ${CMAKE_CURRENT_SOURCE_DIR} failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    option(GIT_SUBMODULE "Check submodules during build" ON)
+    if(GIT_SUBMODULE)
+        message(STATUS "Submodule update (non-recursive to avoid nested dependency duplication)")
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init ${CMAKE_CURRENT_SOURCE_DIR}
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "git submodule update --init ${CMAKE_CURRENT_SOURCE_DIR} failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+        endif()
     endif()
 endif()
-
 # The submodule libraries each have their own third_party dependencies
 # We need to build them in the correct order to satisfy dependencies
 # Each library creates a namespaced target (e.g., PENF::PENF)
