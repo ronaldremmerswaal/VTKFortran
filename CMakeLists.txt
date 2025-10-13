@@ -4,8 +4,19 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 
-
 PROJECT(VTK_IO Fortran C)
+
+# Set RPATH policy for proper shared library runtime linking
+if(POLICY CMP0042)
+    cmake_policy(SET CMP0042 NEW) # Enable RPATH on macOS
+endif()
+if(POLICY CMP0068)
+    cmake_policy(SET CMP0068 NEW) # RPATH settings on macOS
+endif()
+
+# Configure RPATH for installed libraries
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 # Note the agreement between the first number of the triplet 
 # VERSION and the SOVERSION
