@@ -6,8 +6,8 @@ file(GLOB VTK_FORTRAN_SOURCES "*.f90" "*.F90")
 # Create the VTK_IO library
 add_library(${LIB} ${VTK_FORTRAN_SOURCES})
 
-# Link against third-party dependencies using namespaced targets
-target_link_libraries(${LIB} PUBLIC 
+# Link against third-party dependencies as PRIVATE to avoid propagating dependencies
+target_link_libraries(${LIB} PRIVATE 
     PENF::PENF
     BeFoR64::BeFoR64
     StringiFor::StringiFor
