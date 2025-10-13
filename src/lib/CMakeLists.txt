@@ -21,10 +21,15 @@ set_target_properties(${LIB} PROPERTIES
     Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
-# Install library
+# Create alias for namespaced usage
+add_library(VTKFortran::VTK_IO ALIAS ${LIB})
+
+# Install library with export
 install(TARGETS ${LIB}
+    EXPORT VTKFortranTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include
 )
 
 # Install module files

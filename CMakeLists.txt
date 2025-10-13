@@ -190,3 +190,34 @@ ADD_SUBDIRECTORY(${SRC_PATH}/third_party)
 ADD_SUBDIRECTORY(${LIB_SRC_PATH})
 ADD_SUBDIRECTORY(${TEST_SRC_PATH})
 
+#################################################################
+# EXPORT CONFIGURATION
+#################################################################
+
+# Install export targets
+install(EXPORT VTKFortranTargets
+    FILE VTKFortranTargets.cmake
+    NAMESPACE VTKFortran::
+    DESTINATION lib/cmake/VTKFortran
+)
+
+# Create config files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    VTKFortranConfig.cmake.in
+    VTKFortranConfig.cmake
+    INSTALL_DESTINATION lib/cmake/VTKFortran
+)
+write_basic_package_version_file(
+    VTKFortranConfigVersion.cmake
+    VERSION ${${PROJECT_NAME}_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# Install config files
+install(FILES 
+    ${CMAKE_CURRENT_BINARY_DIR}/VTKFortranConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/VTKFortranConfigVersion.cmake
+    DESTINATION lib/cmake/VTKFortran
+)
+
