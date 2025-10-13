@@ -46,6 +46,11 @@ endif()
 target_include_directories(${LIB} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
     $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/PENF>
+    $<INSTALL_INTERFACE:include/BeFoR64>
+    $<INSTALL_INTERFACE:include/StringiFor>
+    $<INSTALL_INTERFACE:include/FACE>
+    $<INSTALL_INTERFACE:include/FoXy>
 )
 
 # Create alias for namespaced usage
