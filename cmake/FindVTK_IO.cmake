@@ -75,7 +75,7 @@ set(VTK_IO_GIT_REPOSITORY "https://github.com/ronaldremmerswaal/VTKFortran.git"
     CACHE STRING "Git repository for VTK_IO")
 set(VTK_IO_GIT_TAG "master" 
     CACHE STRING "Git tag/branch for VTK_IO")
-set(VTK_IO_BUILD_SHARED_LIBS ON 
+set(VTK_IO_BUILD_SHARED_LIBS OFF 
     CACHE BOOL "Build VTK_IO as shared library")
 set(VTK_IO_AUTO_BUILD ON 
     CACHE BOOL "Automatically build VTK_IO if not found")
@@ -99,7 +99,29 @@ else()
     endif()
 
     # Look for VTK_IO using the standard CMake package mechanism
-    find_package(VTK_IO QUIET CONFIG)
+    # Check if VTK_IO config files exist first
+    find_file(VTK_IO_CONFIG_FILE VTK_IOConfig.cmake 
+        HINTS ${CMAKE_PREFIX_PATH}/lib/cmake/VTK_IO
+              $ENV{HOME}/.local/lib/cmake/VTK_IO
+    )
+    
+    if(VTK_IO_CONFIG_FILE)
+        # Config file exists, but we need to check if library file exists too
+        # before calling find_package which might fail on missing targets
+        find_file(VTK_IO_LIB_FILE libVTK_IO.a
+            HINTS ${CMAKE_PREFIX_PATH}/lib
+                  $ENV{HOME}/.local/lib
+        )
+        
+        if(VTK_IO_LIB_FILE)
+            find_package(VTK_IO QUIET CONFIG)
+        else()
+            message(STATUS "VTK_IO config found but library missing - will rebuild")
+            set(VTK_IO_FOUND FALSE)
+        endif()
+    else()
+        find_package(VTK_IO QUIET CONFIG)
+    endif()
 endif()
 
 if(VTK_IO_FOUND)
@@ -110,9 +132,19 @@ if(VTK_IO_FOUND)
         get_target_property(VTK_IO_LOCATION VTK_IO::VTK_IO LOCATION)
         if(VTK_IO_LOCATION)
             message(STATUS "  VTK_IO location: ${VTK_IO_LOCATION}")
+            # Check if the library file actually exists
+            if(NOT EXISTS "${VTK_IO_LOCATION}")
+                message(STATUS "  VTK_IO library file missing - will rebuild")
+                set(VTK_IO_FOUND FALSE)
+            endif()
+        else()
+            message(STATUS "  VTK_IO location not found - will rebuild")
+            set(VTK_IO_FOUND FALSE)
         endif()
     endif()
-else()
+endif()
+
+if(NOT VTK_IO_FOUND)
     if(VTK_IO_AUTO_BUILD)
         message(STATUS "VTK_IO not found - will build from source")
         
@@ -134,7 +166,17 @@ else()
         endif()
         
         # Check if VTK_IO is already installed at the target location
-        find_package(VTK_IO QUIET CONFIG PATHS ${VTK_IO_INSTALL_PREFIX}/lib/cmake/VTK_IO NO_DEFAULT_PATH)
+        # First check if library file exists to avoid broken config
+        find_file(VTK_IO_TARGET_LIB libVTK_IO.a
+            PATHS ${VTK_IO_INSTALL_PREFIX}/lib
+            NO_DEFAULT_PATH
+        )
+        
+        if(VTK_IO_TARGET_LIB)
+            find_package(VTK_IO QUIET CONFIG PATHS ${VTK_IO_INSTALL_PREFIX}/lib/cmake/VTK_IO NO_DEFAULT_PATH)
+        else()
+            set(VTK_IO_FOUND FALSE)
+        endif()
         
         if(VTK_IO_FOUND)
             message(STATUS "Found VTK_IO installation at ${VTK_IO_INSTALL_PREFIX}")
