@@ -63,6 +63,7 @@ OPTION(${PROJECT_NAME}_ENABLE_OPTIMIZE "To activate optimization flags" OFF)
 OPTION(${PROJECT_NAME}_ENABLE_OPENMP "To activate the OpenMP extensions for Fortran" OFF)
 OPTION(${PROJECT_NAME}_ENABLE_MPI "To compile MPI tests and link against MPI library" OFF)
 OPTION(${PROJECT_NAME}_ENABLE_R16P "To define a real precission type with 128 bits" OFF)
+OPTION(BUILD_SHARED_LIBS "Build shared libraries instead of static" ON)
 #OPTION(${PROJECT_NAME}_ENABLE_HUGE "To use 64 bit instead 32 bit integer as a bit counter" OFF)
 
 
@@ -194,6 +195,9 @@ ADD_SUBDIRECTORY(${TEST_SRC_PATH})
 # EXPORT CONFIGURATION
 #################################################################
 
+# Set variables for the config file
+set(VTK_IO_SHARED_BUILD ${BUILD_SHARED_LIBS})
+
 # Install export targets
 install(EXPORT VTK_IOTargets
     FILE VTK_IOTargets.cmake
@@ -204,9 +208,10 @@ install(EXPORT VTK_IOTargets
 # Create config files
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-    VTK_IOConfig.cmake.in
+    cmake/VTK_IOConfig.cmake.in
     VTK_IOConfig.cmake
     INSTALL_DESTINATION lib/cmake/VTK_IO
+    PATH_VARS CMAKE_INSTALL_PREFIX
 )
 write_basic_package_version_file(
     VTK_IOConfigVersion.cmake
@@ -220,4 +225,12 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/VTK_IOConfigVersion.cmake
     DESTINATION lib/cmake/VTK_IO
 )
+
+# Print build configuration summary
+message(STATUS "========================================")
+message(STATUS "VTK_IO Build Configuration:")
+message(STATUS "  Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Shared libs: ${BUILD_SHARED_LIBS}")
+message(STATUS "  Version: ${${PROJECT_NAME}_VERSION}")
+message(STATUS "========================================")
 

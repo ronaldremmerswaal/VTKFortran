@@ -79,3 +79,12 @@ target_link_libraries(vtk_fortran_third_party INTERFACE
     FACE::FACE  
     FoXy::FoXy
 )
+
+# For shared library builds, ensure dependencies are built as static
+# This prevents dependency propagation issues
+if(BUILD_SHARED_LIBS)
+    # Set properties to build third-party deps as static even when building shared VTK_IO
+    set_target_properties(PENF BeFoR64 StringiFor FACE FoXy PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+    )
+endif()

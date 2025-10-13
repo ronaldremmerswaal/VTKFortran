@@ -1,0 +1,63 @@
+@PACKAGE_INIT@
+
+# Store build configuration
+set(VTK_IO_SHARED_BUILD @VTK_IO_SHARED_BUILD@)
+
+# Helper macro to check if target exists
+macro(check_target_exists target_name)
+    if(NOT TARGET ${target_name})
+        set(${target_name}_FOUND FALSE)
+    else()
+        set(${target_name}_FOUND TRUE)
+    endif()
+endmacro()
+
+# Find dependencies based on how VTK_IO was built
+if(VTK_IO_SHARED_BUILD)
+    # For shared builds, dependencies are embedded in the shared library
+    # No need to find them unless specifically requested
+    if(VTK_IO_FORCE_FIND_DEPENDENCIES)
+        message(STATUS "VTK_IO: Force finding dependencies for shared build")
+        include(CMakeFindDependencyMacro)
+        find_dependency(PENF QUIET)
+        find_dependency(BeFoR64 QUIET) 
+        find_dependency(StringiFor QUIET)
+        find_dependency(FoXy QUIET)
+    endif()
+else()
+    # For static builds, we need to find and link the dependencies
+    message(STATUS "VTK_IO: Finding dependencies for static build")
+    include(CMakeFindDependencyMacro)
+    
+    # Try to find the dependencies
+    find_dependency(PENF QUIET)
+    find_dependency(BeFoR64 QUIET) 
+    find_dependency(StringiFor QUIET)
+    find_dependency(FoXy QUIET)
+    
+    # Check if all required targets exist
+    check_target_exists(PENF::PENF)
+    check_target_exists(BeFoR64::BeFoR64) 
+    check_target_exists(StringiFor::StringiFor)
+    check_target_exists(FoXy::FoXy)
+    
+    if(NOT PENF::PENF_FOUND)
+        message(WARNING "VTK_IO was built as static library but dependencies could not be found. "
+                       "This may cause linking issues. Consider:\n"
+                       "1. Installing dependencies separately\n" 
+                       "2. Using a shared build of VTK_IO\n"
+                       "3. Building VTK_IO from source with dependencies")
+    endif()
+endif()
+
+# Include the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/VTK_IOTargets.cmake")
+
+check_required_components(VTK_IO)
+
+# Provide helpful information
+if(VTK_IO_SHARED_BUILD)
+    message(STATUS "VTK_IO: Using shared library (dependencies embedded)")
+else()
+    message(STATUS "VTK_IO: Using static library (dependencies required)")
+endif()
