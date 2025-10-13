@@ -1,9 +1,9 @@
-# VTKFortran library source files
+# VTK_IO library source files
 
 # Collect all Fortran source files
 file(GLOB VTK_FORTRAN_SOURCES "*.f90" "*.F90")
 
-# Create the VTKFortran library
+# Create the VTK_IO library
 add_library(${LIB} ${VTK_FORTRAN_SOURCES})
 
 # Link against third-party dependencies using namespaced targets
@@ -22,11 +22,11 @@ set_target_properties(${LIB} PROPERTIES
 )
 
 # Create alias for namespaced usage
-add_library(VTKFortran::VTK_IO ALIAS ${LIB})
+add_library(VTK_IO::VTK_IO ALIAS ${LIB})
 
 # Install library with export
 install(TARGETS ${LIB}
-    EXPORT VTKFortranTargets
+    EXPORT VTK_IOTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     INCLUDES DESTINATION include
