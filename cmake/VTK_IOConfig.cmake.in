@@ -3,55 +3,41 @@
 # Store build configuration
 set(VTK_IO_SHARED_BUILD @VTK_IO_SHARED_BUILD@)
 
-# Helper macro to check if target exists
-macro(check_target_exists target_name)
-    if(NOT TARGET ${target_name})
-        set(${target_name}_FOUND FALSE)
-    else()
-        set(${target_name}_FOUND TRUE)
-    endif()
-endmacro()
-
-# Find dependencies based on how VTK_IO was built
+# For static libraries, dependencies are embedded but module files are still needed
+# For shared libraries, we need to find dependencies
 if(VTK_IO_SHARED_BUILD)
-    # For shared builds, dependencies are embedded in the shared library
-    # No need to find them unless specifically requested
-    if(VTK_IO_FORCE_FIND_DEPENDENCIES)
-        message(STATUS "VTK_IO: Force finding dependencies for shared build")
-        include(CMakeFindDependencyMacro)
-        find_dependency(PENF QUIET)
-        find_dependency(BeFoR64 QUIET) 
-        find_dependency(StringiFor QUIET)
-        find_dependency(FoXy QUIET)
-    endif()
+    message(STATUS "VTK_IO: Shared library - finding required dependencies")
+    
+    # Find all required dependencies by including their config files directly
+    # The dependencies are installed alongside VTK_IO in the same prefix
+    set(_vtk_io_config_dir ${CMAKE_CURRENT_LIST_DIR})
+    get_filename_component(_vtk_io_prefix "${_vtk_io_config_dir}/../../.." ABSOLUTE)
+
+    # Include config files directly since naming conventions vary
+    include("${_vtk_io_prefix}/lib/cmake/PENF/PENF-config.cmake")
+    include("${_vtk_io_prefix}/lib/cmake/BeFoR64/BeFoR64Config.cmake")
+    include("${_vtk_io_prefix}/lib/cmake/StringiFor/StringiForConfig.cmake")
+    include("${_vtk_io_prefix}/lib/cmake/FACE/FACE-config.cmake")
+    include("${_vtk_io_prefix}/lib/cmake/FoXy/FoXyConfig.cmake")
 else()
-    # For static builds, we need to find and link the dependencies
-    message(STATUS "VTK_IO: Finding dependencies for static build")
-    include(CMakeFindDependencyMacro)
-    
-    # Try to find the dependencies
-    find_dependency(PENF QUIET)
-    find_dependency(BeFoR64 QUIET) 
-    find_dependency(StringiFor QUIET)
-    find_dependency(FoXy QUIET)
-    
-    # Check if all required targets exist
-    check_target_exists(PENF::PENF)
-    check_target_exists(BeFoR64::BeFoR64) 
-    check_target_exists(StringiFor::StringiFor)
-    check_target_exists(FoXy::FoXy)
-    
-    if(NOT PENF::PENF_FOUND)
-        message(WARNING "VTK_IO was built as static library but dependencies could not be found. "
-                       "This may cause linking issues. Consider:\n"
-                       "1. Installing dependencies separately\n" 
-                       "2. Using a shared build of VTK_IO\n"
-                       "3. Building VTK_IO from source with dependencies")
-    endif()
+    message(STATUS "VTK_IO: Static library - dependencies embedded, adding module include paths")
 endif()
 
 # Include the targets file
 include("${CMAKE_CURRENT_LIST_DIR}/VTK_IOTargets.cmake")
+
+# For static libraries, add module include paths after target is created
+if(NOT VTK_IO_SHARED_BUILD)
+    # For static libraries, we don't need the dependency targets but we still need
+    # access to their module files for compilation
+    set(_vtk_io_config_dir ${CMAKE_CURRENT_LIST_DIR})
+    get_filename_component(_vtk_io_prefix "${_vtk_io_config_dir}/../../.." ABSOLUTE)
+    
+    # Add include directories for dependency module files
+    set_target_properties(VTK_IO::VTK_IO PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${_vtk_io_prefix}/include;${_vtk_io_prefix}/include/PENF;${_vtk_io_prefix}/include/BeFoR64;${_vtk_io_prefix}/include/StringiFor;${_vtk_io_prefix}/include/FACE;${_vtk_io_prefix}/include/FoXy"
+    )
+endif()
 
 check_required_components(VTK_IO)
 

@@ -70,21 +70,31 @@ else()
 endif()
 
 # Create an interface target that links all third-party dependencies
-# Using namespaced targets as created by the individual libraries
+# For static builds, link directly to libraries to avoid export issues
+# For shared builds, use namespaced targets
 add_library(vtk_fortran_third_party INTERFACE)
-target_link_libraries(vtk_fortran_third_party INTERFACE
-    PENF::PENF
-    BeFoR64::BeFoR64
-    StringiFor::StringiFor
-    FACE::FACE  
-    FoXy::FoXy
-)
 
-# For shared library builds, ensure dependencies are built as static
-# This prevents dependency propagation issues
 if(BUILD_SHARED_LIBS)
+    # For shared libraries, use the exported targets
+    target_link_libraries(vtk_fortran_third_party INTERFACE
+        PENF::PENF
+        BeFoR64::BeFoR64
+        StringiFor::StringiFor
+        FACE::FACE  
+        FoXy::FoXy
+    )
     # Set properties to build third-party deps as static even when building shared VTK_IO
     set_target_properties(PENF BeFoR64 StringiFor FACE FoXy PROPERTIES
         POSITION_INDEPENDENT_CODE ON
+    )
+else()
+    # For static libraries, link directly to the library targets (not exported names)
+    # This avoids dependency propagation issues
+    target_link_libraries(vtk_fortran_third_party INTERFACE
+        PENF
+        BeFoR64
+        StringiFor
+        FACE  
+        FoXy
     )
 endif()

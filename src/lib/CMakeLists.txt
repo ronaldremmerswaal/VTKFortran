@@ -6,26 +6,6 @@ file(GLOB VTK_FORTRAN_SOURCES "*.f90" "*.F90")
 # Create the VTK_IO library
 add_library(${LIB} ${VTK_FORTRAN_SOURCES})
 
-# For shared library builds, we want to hide third-party dependencies
-# For static library builds, dependencies need to be propagated
-if(BUILD_SHARED_LIBS)
-    # Link third-party dependencies as PRIVATE to hide them from consumers
-    target_link_libraries(${LIB} PRIVATE 
-        PENF::PENF
-        BeFoR64::BeFoR64
-        StringiFor::StringiFor
-        FoXy::FoXy
-    )
-else()
-    # For static libraries, dependencies must be PUBLIC to be propagated
-    target_link_libraries(${LIB} PUBLIC 
-        PENF::PENF
-        BeFoR64::BeFoR64
-        StringiFor::StringiFor
-        FoXy::FoXy
-    )
-endif()
-
 # Set target properties
 set_target_properties(${LIB} PROPERTIES
     VERSION ${${PROJECT_NAME}_VERSION}
@@ -44,16 +24,56 @@ if(BUILD_SHARED_LIBS)
     )
 endif()
 
+# Add build-time include directories for third-party modules
+# These paths are needed for VTK_IO sources to find dependency module files
+target_include_directories(${LIB} PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/third_party/PENF/modules>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/third_party/BeFoR64/modules>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/third_party/StringiFor/modules>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/third_party/FACE/modules>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/third_party/FoXy/modules>
+)
+
 # Set include directories for consumers
 target_include_directories(${LIB} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
     $<INSTALL_INTERFACE:include>
-    $<INSTALL_INTERFACE:include/PENF>
-    $<INSTALL_INTERFACE:include/BeFoR64>
-    $<INSTALL_INTERFACE:include/StringiFor>
-    $<INSTALL_INTERFACE:include/FACE>
-    $<INSTALL_INTERFACE:include/FoXy>
 )
+
+# For static libraries, create a monolithic library by combining all static libraries
+# For shared libraries, link to dependencies normally
+if(BUILD_SHARED_LIBS)
+    target_link_libraries(${LIB} PUBLIC 
+        PENF::PENF
+        BeFoR64::BeFoR64
+        StringiFor::StringiFor
+        FACE::FACE
+        FoXy::FoXy
+    )
+else()
+    # For static libraries, create a combined library using a custom target
+    message(STATUS "VTK_IO: Building as static library - combining with dependencies")
+    
+    # Make sure dependencies are built but don't link to avoid export issues
+    add_dependencies(${LIB} PENF BeFoR64 StringiFor FACE FoXy)
+    
+    # Create a custom command to combine all static libraries
+    add_custom_command(TARGET ${LIB} POST_BUILD
+        # First extract VTK_IO objects from the original library
+        COMMAND ${CMAKE_AR} -x $<TARGET_FILE:${LIB}>
+        # Then extract all dependency objects
+        COMMAND ${CMAKE_AR} -x $<TARGET_FILE:PENF>
+        COMMAND ${CMAKE_AR} -x $<TARGET_FILE:BeFoR64> 
+        COMMAND ${CMAKE_AR} -x $<TARGET_FILE:StringiFor>
+        COMMAND ${CMAKE_AR} -x $<TARGET_FILE:FACE>
+        COMMAND ${CMAKE_AR} -x $<TARGET_FILE:FoXy>
+        # Create new combined library with all objects
+        COMMAND ${CMAKE_AR} -qcs $<TARGET_FILE:${LIB}> *.o
+        COMMAND ${CMAKE_COMMAND} -E remove *.o
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Combining static libraries into monolithic VTK_IO library"
+    )
+endif()
 
 # Create alias for namespaced usage
 add_library(VTK_IO::VTK_IO ALIAS ${LIB})
