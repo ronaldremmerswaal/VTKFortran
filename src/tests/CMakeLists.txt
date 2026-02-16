@@ -9,7 +9,14 @@ if(BUILD_TESTING)
     foreach(test_source ${VTK_FORTRAN_TEST_SOURCES})
         get_filename_component(test_name ${test_source} NAME_WE)
         add_executable(${test_name} ${test_source})
-        target_link_libraries(${test_name} ${LIB})
+        target_link_libraries(${test_name} 
+            ${LIB}
+            PENF::PENF
+            BeFoR64::BeFoR64
+            StringiFor::StringiFor
+            FACE::FACE
+            FoXy::FoXy
+        )
         
         # Add as a test if it follows naming convention
         if(test_name MATCHES "vtk_fortran_")

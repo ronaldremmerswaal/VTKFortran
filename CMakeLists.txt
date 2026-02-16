@@ -221,8 +221,17 @@ message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 # ADD SOURCE SUBDIRS
 #################################################################
 
+# Enable CTest support (creates BUILD_TESTING option)
+include(CTest)
+
+# Save BUILD_TESTING value before third-party overwrites it
+set(VTK_IO_BUILD_TESTING ${BUILD_TESTING})
+
 # Add third-party dependencies first
 ADD_SUBDIRECTORY(${SRC_PATH}/third_party)
+
+# Restore BUILD_TESTING for VTK_IO tests
+set(BUILD_TESTING ${VTK_IO_BUILD_TESTING} CACHE BOOL "Build the testing tree." FORCE)
 
 ADD_SUBDIRECTORY(${LIB_SRC_PATH})
 ADD_SUBDIRECTORY(${TEST_SRC_PATH})
