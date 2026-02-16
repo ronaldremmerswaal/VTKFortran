@@ -84,6 +84,8 @@ IF (${${PROJECT_NAME}_ENABLE_F03STD})
         SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -std=f2008 -fall-intrinsics")
     ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel" OR Fortran_COMPILER_NAME MATCHES "ifort*")
         SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -std08")
+    ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "NVHPC" OR Fortran_COMPILER_NAME MATCHES "nvfortran*")
+        SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -Mstandard")
     ENDIF ()
 ENDIF ()
 
@@ -92,6 +94,8 @@ IF (${${PROJECT_NAME}_ENABLE_OPTIMIZE})
         SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -O3")
     ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel" OR Fortran_COMPILER_NAME MATCHES "ifort*")
         SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -O3 -ipo -inline all -ipo-jobs4 -vec-report1")
+    ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "NVHPC" OR Fortran_COMPILER_NAME MATCHES "nvfortran*")
+        SET(EXTRA_FLAGS "${EXTRA_FLAGS}  -O3 -fast -Munroll -Minline")
     ENDIF ()
 ENDIF ()
 
@@ -169,6 +173,27 @@ ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel" OR Fortran_COMPILER_NAME M
     string(STRIP "${CMAKE_Fortran_FLAGS_RELEASE} ${PROJECT_Fortran_FLAGS_RELEASE}" CMAKE_Fortran_FLAGS_RELEASE)
   endif()
   if(NOT CMAKE_BUILD_TYPE STREQUAL "RELEASE" AND NOT CMAKE_Fortran_FLAGS_DEBUG MATCHES "check all")
+    string(STRIP "${CMAKE_Fortran_FLAGS_DEBUG} ${PROJECT_Fortran_FLAGS_DEBUG}" CMAKE_Fortran_FLAGS_DEBUG)
+  endif()
+  
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}" CACHE STRING "Fortran compiler flags" FORCE)
+  set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}" CACHE STRING "Fortran compiler flags for Release" FORCE)
+  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" CACHE STRING "Fortran compiler flags for Debug" FORCE)
+  
+ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "NVHPC" OR Fortran_COMPILER_NAME MATCHES "nvfortran*")
+  # NVIDIA HPC SDK (nvfortran) - append to existing flags if not already present
+  set(PROJECT_FORTRAN_FLAGS "-Mpreprocess -Mallocatable=03")
+  set(PROJECT_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS}")
+  set(PROJECT_Fortran_FLAGS_DEBUG "-O0 -g -Mbounds -Mchkptr -Mchkstk -traceback -Minform=inform")
+  
+  # Only append flags if they're not already present
+  if(NOT CMAKE_Fortran_FLAGS MATCHES "${PROJECT_FORTRAN_FLAGS}")
+    string(STRIP "${CMAKE_Fortran_FLAGS} ${PROJECT_FORTRAN_FLAGS}" CMAKE_Fortran_FLAGS)
+  endif()
+  if(NOT CMAKE_Fortran_FLAGS_RELEASE MATCHES "${EXTRA_FLAGS}" AND EXTRA_FLAGS)
+    string(STRIP "${CMAKE_Fortran_FLAGS_RELEASE} ${PROJECT_Fortran_FLAGS_RELEASE}" CMAKE_Fortran_FLAGS_RELEASE)
+  endif()
+  if(NOT CMAKE_BUILD_TYPE STREQUAL "RELEASE" AND NOT CMAKE_Fortran_FLAGS_DEBUG MATCHES "Mbounds")
     string(STRIP "${CMAKE_Fortran_FLAGS_DEBUG} ${PROJECT_Fortran_FLAGS_DEBUG}" CMAKE_Fortran_FLAGS_DEBUG)
   endif()
   
