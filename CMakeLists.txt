@@ -137,7 +137,7 @@ ENDIF ()
 #################################################################
 
 
-IF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU" OR Fortran_COMPILER_NAME MATCHES "gfortran*")
+if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
   # gfortran - append to existing flags if not already present
   set(PROJECT_FORTRAN_FLAGS "-cpp -frealloc-lhs")
   set(PROJECT_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS}")
@@ -158,7 +158,7 @@ IF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU" OR Fortran_COMPILER_NAME MATCHES
   set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}" CACHE STRING "Fortran compiler flags for Release" FORCE)
   set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" CACHE STRING "Fortran compiler flags for Debug" FORCE)
   
-ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel" OR Fortran_COMPILER_NAME MATCHES "ifort*")
+ELSEIF (CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # ifort - append to existing flags if not already present
   set(PROJECT_FORTRAN_FLAGS "-cpp -assume realloc_lhs")
   set(PROJECT_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS}")
@@ -180,7 +180,7 @@ ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel" OR Fortran_COMPILER_NAME M
   set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}" CACHE STRING "Fortran compiler flags for Release" FORCE)
   set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" CACHE STRING "Fortran compiler flags for Debug" FORCE)
   
-ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "NVHPC" OR Fortran_COMPILER_NAME MATCHES "nvfortran*")
+ELSEIF (CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
   # NVIDIA HPC SDK (nvfortran) - append to existing flags if not already present
   set(PROJECT_FORTRAN_FLAGS "-Mpreprocess -Mallocatable=03")
   set(PROJECT_Fortran_FLAGS_RELEASE "${EXTRA_FLAGS}")
